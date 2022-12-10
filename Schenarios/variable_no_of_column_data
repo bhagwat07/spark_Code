@@ -1,0 +1,35 @@
+
+''' variable data example
+    1,bhagwat
+    2,yogesh,sillod,yogeshkakde9@gmail.com
+    3,saurav,pune,sauravkakde@gmail.com
+    4,sama,sambhinagar
+'''
+
+# creating a sample data in databrics
+
+dbutils.fs.put("/schenario/dynamic_column.csv",'''1,Bhagwat
+2,Yogesh,Sillod,yogeshkakde9@gmail.com
+3,Saurav,Pune,sauravkakde@gmail.com
+4,Sama,Sambhajinagar''')
+
+
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+df = spark.read.text('/schenario/dynamic_column.csv')
+df1 = df.withColumn('split_col',split(col('value'),','))
+
+# size function len of array size .............[1,bhagwat,3]////////// it gives 3
+
+# on top of that max function the higest size in that column
+
+res1 = res.select(max(size(col("split_col")))).collect()[0][0]
+
+for i in range(res1):
+    df1 = df1.withColumn('col' + str(i), df1['split_col'][i])
+
+df1 = df1.drop('value','split_col')
+
+
+display(df1)
