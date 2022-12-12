@@ -1,0 +1,14 @@
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+
+# recursiveFileLookup is used to read the data from files from nested folder (folder inside folder).
+# input_file_name() function gives the fileName with path.
+
+df = spark.read.format('csv').option("recursiveFileLookup",'true').option('header','true').load('C:\Bigdata\drivers\sample.txt')
+
+res = df.withColumn('file_name',input_file_name())
+
+res.show(truncate = False)
