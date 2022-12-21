@@ -1,0 +1,80 @@
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+sc=spark.sparkContext
+data="C:\\bigdata\\drivers\\asl.csv"
+drdd = sc.textFile(data)
+#RDD pure programming model api. sql queries not possible by default.
+#Any transformations or actions for collection of elements.
+
+#filter apply logic on entire row
+#res=drdd.filter(lambda x:"blr" in x)
+#in hadoop or hive, sqoop, spark ... must skip header
+#res=drdd.map(lambda x:x.split(",")).filter(lambda x:x[2]=='blr')
+#res=drdd.map(lambda x:x.split(",")).filter(lambda x:int(x[1])>30)
+res=drdd.filter(lambda x:"age" not in x).map(lambda x:x.split(",")).filter(lambda x:int(x[1])>30)
+for x in res.take(9):
+    print(x)
+#Map: apply a logic on top of each & every element. how many input elements u have same number of output elements ull get.
+#Filter: based on bool value filter the results. or based on bool function apply a logic on top each & every element.
+==============================================================================================================================
+
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+sc=spark.sparkContext
+data="C:\\bigdata\\drivers\\email.txt"
+drdd = sc.textFile(data)
+
+res=drdd.filter(lambda x:"@" in x).map(lambda x:x.strip().split(" ")).map(lambda x:(x[0],x[-1])).toDF(["name","email"])
+res.show()
+'''for x in res.take(9):
+    print(x)
+===============================================================================================================================
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+sc=spark.sparkContext
+data="C:\\bigdata\\drivers\\asl.csv"
+#data="C:\\bigdata\\drivers\\email.txt"
+drdd = sc.textFile(data)
+
+res=drdd.filter(lambda x:"age" not in x).map(lambda x:x.split(",")).toDF(["name","age","city"])
+#res.show()
+#toDF used to convert rdd to dataframe or rename all columns.
+res.where(col("age")>=30).show()
+=================================================================================================================================
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+sc=spark.sparkContext
+data="C:\\bigdata\\drivers\\asl.csv"
+
+drdd = sc.textFile(data)
+
+res=drdd.filter(lambda x:"age" not in x).map(lambda x:x.split(",")).map(lambda x:(x[2],1)).reduceByKey(lambda x,y:(x+y)).sortBy(lambda x:x[1],False)
+#if u want to group the values data must be key value format
+#if u want to group the values u must use reduceByKey if anything ends with ByKey ... data must be key value format (venu,43) like that
+#reduceByKey ... based on key  , process value.. or based on same key process value.
+'''
+('blr', 1)x
+('blr', 1)y .. x+y ...1+1 ..2..(blr,2)x
+('blr', 1)y ...x+y ...2+1...3 .. (blr,3)
+=========================================================================================================================
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+spark = SparkSession.builder.master("local[*]").appName("test").getOrCreate()
+sc=spark.sparkContext
+data="C:\\bigdata\\drivers\\donations.csv"
+
+drdd = sc.textFile(data)
+skip=drdd.first() # u ll get first line of the data (name,dt,amount)
+res=drdd.filter(lambda x:x!=skip).map(lambda x:x.split(",")).map(lambda x:(x[0],int(x[2]))).reduceByKey(lambda x,y:(x+y))
+
+for x in res.take(9):
+    print(x)
